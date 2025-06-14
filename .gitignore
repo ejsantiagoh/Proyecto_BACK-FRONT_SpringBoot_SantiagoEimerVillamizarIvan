@@ -1,0 +1,90 @@
+######################################################
+# 🚀 PROYECTO FULL STACK: Spring Boot + React
+# Este .gitignore unifica lo necesario para backend y frontend
+######################################################
+
+##############################
+# 🌱 ARCHIVOS GENERADOS POR JAVA / SPRING BOOT
+##############################
+# Directorio de compilación
+/backend/target/
+/build/
+
+# Archivos de empaquetado
+*.jar
+*.war
+
+# Archivos de log
+*.log
+
+# Maven Wrapper
+/backend/.mvn/wrapper/maven-wrapper.jar
+
+# Archivos de entorno
+/backend/.env
+/backend/application-local.properties
+
+# Archivos específicos de herramientas IDE
+# Eclipse / Spring Tool Suite
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+##############################
+# ⚛️ ARCHIVOS GENERADOS POR NODE / REACT
+##############################
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/build/
+/frontend/.vite/
+/frontend/.next/
+/frontend/.local
+/frontend/.env
+
+# Archivos de log de npm/yarn/pnpm/lerna
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs
+*.log
+
+##############################
+# 🧠 CONFIGURACIONES DE EDITORES
+##############################
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+.ntvs/
+*.njsproj
+*.sln
+*.sw?
+
+##############################
+# ❌ ARCHIVOS COMUNES A EVITAR
+##############################
+*.bak
+*.tmp
+*.swp
+.env

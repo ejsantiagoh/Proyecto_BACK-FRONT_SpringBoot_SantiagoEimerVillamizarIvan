@@ -1,0 +1,17 @@
+# Forzar LF en este archivo
+.gitattributes text eol=lf
+
+/mvnw text eol=lf
+*.cmd text eol=crlf
+
+# Forzar LF en scripts Unix (como mvnw)  
+backend/mvnw text eol=lf  
+
+# Archivos binarios (evitar cambios de línea)  
+*.png binary  
+*.jpg binary  
+
+# Archivos de texto (normalizar a LF)  
+*.txt text  
+*.md text  
+*.java text  
