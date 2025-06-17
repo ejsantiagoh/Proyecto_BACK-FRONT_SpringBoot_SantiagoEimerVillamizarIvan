@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/lotes")
-public class LoteController {
+@RequestMapping("/api/operador/lotes")
+public class LoteController {   
 
     @Autowired
     private LoteService loteService;

@@ -9,6 +9,7 @@ import com.c4.atunesdelpacifico.repository.DetallePedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,20 @@ public class PedidoService {
         if (pedido.getDetallePedidos() == null || pedido.getDetallePedidos().isEmpty()) {
             throw new IllegalArgumentException("Debe haber al menos un detalle de pedido");
         }
+        // Inicializar campos obligatorios
+        if (pedido.getEstado() == null) {
+            pedido.setEstado(Pedido.EstadoPedido.Pendiente);
+        }
+        if (pedido.getFechaPedido() == null) {
+            pedido.setFechaPedido(new java.sql.Date(new Date().getTime()));
+        }
+        if (pedido.getFechaEntrega() == null) {
+            // Establecer fechaEntrega como 3 días después de fechaPedido (ajustable)
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(java.util.Calendar.DAY_OF_MONTH, 3);
+            pedido.setFechaEntrega(new java.sql.Date(cal.getTimeInMillis()));
+        }
         Double total = 0.0;
         for (DetallePedido detalle : pedido.getDetallePedidos()) {
             Optional<Lote> lote = loteRepository.findById(detalle.getLote().getId());
@@ -46,7 +61,14 @@ public class PedidoService {
         return pedidoRepository.save(pedido);
     }
 
-    public List<Pedido> consultarPedidos() {
+    public List<Pedido> consultarPedidos(Integer clienteId, String estado) {
+        if (clienteId != null && estado != null) {
+            return pedidoRepository.findByCliente_IdAndEstado(clienteId, Pedido.EstadoPedido.valueOf(estado));
+        } else if (clienteId != null) {
+            return pedidoRepository.findByCliente_Id(clienteId);
+        } else if (estado != null) {
+            return pedidoRepository.findByEstado(Pedido.EstadoPedido.valueOf(estado));
+        }
         return pedidoRepository.findAll();
     }
 
@@ -61,7 +83,6 @@ public class PedidoService {
                 }
             }
         }
-        // Convertir String a Enum EstadoPedido
         Pedido.EstadoPedido estadoEnum;
         try {
             estadoEnum = Pedido.EstadoPedido.valueOf(nuevoEstado.replace(" ", "_"));
@@ -74,9 +95,5 @@ public class PedidoService {
 
     public List<DetallePedido> consultarDetallesPorPedido(Integer pedidoId) {
         return detallePedidoRepository.findByPedido_Id(pedidoId);
-    }
-
-    public List<DetallePedido> consultarDetallesPorLote(Integer loteId) {
-        return detallePedidoRepository.findByLote_Id(loteId);
     }
 }

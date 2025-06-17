@@ -37,7 +37,6 @@ public class LoteService {
     public List<Lote> consultarInventario(String tipo, String fecha, String estado) {
         if (tipo != null && !tipo.isEmpty()) {
             try {
-                // Normalizar el tipo para que coincida con el enum (reemplazar espacios y guiones por guiones bajos)
                 String tipoNormalizado = tipo.replace(" ", "_").replace("-", "_");
                 Producto.TipoProducto.valueOf(tipoNormalizado);
                 return loteRepository.findByProductoNombre(tipoNormalizado);

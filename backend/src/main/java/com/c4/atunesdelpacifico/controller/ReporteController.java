@@ -10,19 +10,34 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reportes")
+@RequestMapping("/api/admin/reportes")
 public class ReporteController {
 
     @Autowired
     private ReporteService reporteService;
 
     @GetMapping("/inventario")
-    public ResponseEntity<Map<String, Object>> generarReporteInventario() {
+    public ResponseEntity<Map<String, Object>> obtenerReporteInventario() {
         return ResponseEntity.ok(reporteService.generarReporteInventario());
     }
 
-    @GetMapping("/pedidos") // revisar
-    public ResponseEntity<Map<String, Object>> generarReportePedidos() {
+    @GetMapping("/pedidos")
+    public ResponseEntity<Map<String, Object>> obtenerReportePedidos() {
         return ResponseEntity.ok(reporteService.generarReportePedidos());
+    }
+
+    @GetMapping("/ventas-producto")
+    public ResponseEntity<Map<String, Object>> obtenerReporteVentasPorProducto() {
+        return ResponseEntity.ok(reporteService.generarReporteVentasPorProducto());
+    }
+
+    @GetMapping("/ventas-cliente")
+    public ResponseEntity<Map<String, Object>> obtenerReporteVentasPorCliente() {
+        return ResponseEntity.ok(reporteService.generarReporteVentasPorCliente());
+    }
+
+    @GetMapping("/produccion")
+    public ResponseEntity<Map<String, Object>> obtenerReporteProduccion() {
+        return ResponseEntity.ok(reporteService.generarReporteProduccion());
     }
 }

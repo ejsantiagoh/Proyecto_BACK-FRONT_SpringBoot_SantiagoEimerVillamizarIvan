@@ -36,7 +36,7 @@ INSERT INTO lotes (codigo_lote, fecha_produccion, producto_id, cantidad, estado)
 
 -- Pedidos
 INSERT INTO pedidos (cliente_id, fecha_pedido, fecha_entrega, total, estado) VALUES 
-(1, '2025-06-10', '2025-06-13', 350000.00, 'En Proceso'),
+(1, '2025-06-10', '2025-06-13', 350000.00, 'En_Proceso'),
 (2, '2025-06-11', '2025-06-14', 220000.00, 'Pendiente');
 
 -- Detalle de pedidos

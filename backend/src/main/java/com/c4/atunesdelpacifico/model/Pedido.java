@@ -3,7 +3,12 @@ package com.c4.atunesdelpacifico.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+// import static org.mockito.Answers.values;
+
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 @Entity
 @Data
@@ -27,13 +32,41 @@ public class Pedido {
     private Double total;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", columnDefinition = "ENUM('Pendiente', 'En Proceso', 'Enviado', 'Cancelado')", nullable = false)
+    @Column(name = "estado", columnDefinition = "ENUM('Pendiente', 'En_Proceso', 'Enviado', 'Cancelado')", nullable = false)
     private EstadoPedido estado;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedido> detallePedidos;
 
+    // public enum EstadoPedido {
+    //     Pendiente, En_Proceso, Enviado, Cancelado
+    // }
     public enum EstadoPedido {
-        Pendiente, En_Proceso, Enviado, Cancelado
+        Pendiente("Pendiente"),
+        En_Proceso("En Proceso"),
+        Enviado("Enviado"),
+        Cancelado("Cancelado");
+
+        private final String valor;
+
+        EstadoPedido(String valor) {
+            this.valor = valor;
+        }
+
+        @JsonValue
+        public String getValor() {
+            return valor;
+        }
+
+        @JsonCreator
+        public static EstadoPedido fromValor(String valor) {
+            for (EstadoPedido estado : values()) {
+                if (estado.valor.equalsIgnoreCase(valor)) {
+                    return estado;
+                }
+            }
+            throw new IllegalArgumentException("EstadoPedido desconocido: " + valor);
+        }
     }
+
 }
