@@ -4,12 +4,10 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-
 import java.util.Date;
 import java.util.function.Function;
 
@@ -22,6 +20,10 @@ public class JwtUtil {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
@@ -37,9 +39,10 @@ public class JwtUtil {
             .getBody();
     }
 
-
     public boolean validateToken(String token, UserDetails userDetails) {
-        return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
+        final String username = extractUsername(token);
+        final String role = extractRole(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token) && role != null;
     }
 
     private boolean isTokenExpired(String token) {
@@ -49,10 +52,10 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
             .setSubject(userDetails.getUsername())
+            .claim("role", userDetails.getAuthorities().stream().findFirst().map(Object::toString).orElse("ROLE_USER").replace("ROLE_", ""))
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
             .compact();
     }
-
 }
