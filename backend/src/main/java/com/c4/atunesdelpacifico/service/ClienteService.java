@@ -43,4 +43,17 @@ public class ClienteService {
         }
         return pedidoRepository.findByCliente_Id(clienteId);
     }
+
+    public void eliminarCliente(Integer id) {
+        Optional<Cliente> cliente = clienteRepository.findById(id);
+        if (cliente.isEmpty()) {
+            throw new IllegalArgumentException("Cliente no encontrado");
+        }
+        List<Pedido> pedidosActivos = pedidoRepository.findByCliente_IdAndEstado(id, Pedido.EstadoPedido.Pendiente);
+        pedidosActivos.addAll(pedidoRepository.findByCliente_IdAndEstado(id, Pedido.EstadoPedido.En_Proceso));
+        if (!pedidosActivos.isEmpty()) {
+            throw new IllegalStateException("No se puede eliminar un cliente con pedidos activos");
+        }
+        clienteRepository.deleteById(id);
+    }
 }

@@ -49,4 +49,15 @@ public class UsuarioService {
             throw new RuntimeException("Usuario no encontrado");
         }
     }
+
+    public void eliminarUsuario(Integer id) {
+        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        if (usuario.isEmpty()) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+        if (usuario.get().getRol().getId() == 1) { // rol_id=1 es Administrador
+            throw new IllegalStateException("No se puede eliminar un usuario Administrador");
+        }
+        usuarioRepository.deleteById(id);
+    }
 }

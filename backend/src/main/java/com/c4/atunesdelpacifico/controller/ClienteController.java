@@ -30,4 +30,10 @@ public class ClienteController {
     public ResponseEntity<List<Pedido>> consultarHistorialPedidos(@PathVariable Integer id) {
         return ResponseEntity.ok(clienteService.consultarHistorialPedidos(id));
     }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarCliente(@PathVariable Integer id) {
+        clienteService.eliminarCliente(id);
+        return ResponseEntity.noContent().build();
+    }
 }

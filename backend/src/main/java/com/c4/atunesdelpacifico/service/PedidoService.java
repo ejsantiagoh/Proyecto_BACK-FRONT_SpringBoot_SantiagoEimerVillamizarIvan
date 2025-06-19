@@ -96,4 +96,15 @@ public class PedidoService {
     public List<DetallePedido> consultarDetallesPorPedido(Integer pedidoId) {
         return detallePedidoRepository.findByPedido_Id(pedidoId);
     }
+
+    public void eliminarPedido(Integer id) {
+        Optional<Pedido> pedido = pedidoRepository.findById(id);
+        if (pedido.isEmpty()) {
+            throw new IllegalArgumentException("Pedido no encontrado");
+        }
+        if (pedido.get().getEstado() != Pedido.EstadoPedido.Cancelado) {
+            throw new IllegalStateException("Solo se pueden eliminar pedidos en estado Cancelado");
+        }
+        pedidoRepository.deleteById(id);
+    }
 }

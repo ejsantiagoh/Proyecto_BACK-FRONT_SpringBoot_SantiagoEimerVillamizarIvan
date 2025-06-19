@@ -66,4 +66,15 @@ public class LoteService {
             throw new RuntimeException("Lote no encontrado");
         }
     }
+
+    public void eliminarLote(Integer id) {
+        Optional<Lote> lote = loteRepository.findById(id);
+        if (lote.isEmpty()) {
+            throw new IllegalArgumentException("Lote no encontrado");
+        }
+        if (lote.get().getEstado() == Lote.EstadoLote.Disponible) {
+            throw new IllegalStateException("No se puede eliminar un lote en estado Disponible");
+        }
+        loteRepository.deleteById(id);
+    }
 }

@@ -35,4 +35,10 @@ public class LoteController {
         Lote loteActualizado = loteService.marcarDefectuoso(id);
         return ResponseEntity.ok(loteActualizado);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarLote(@PathVariable Integer id) {
+        loteService.eliminarLote(id);
+        return ResponseEntity.noContent().build();
+    }
 }

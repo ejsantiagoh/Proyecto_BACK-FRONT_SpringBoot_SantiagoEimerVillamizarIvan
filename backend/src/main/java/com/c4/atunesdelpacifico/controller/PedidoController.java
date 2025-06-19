@@ -44,4 +44,10 @@ public class PedidoController {
     public ResponseEntity<List<DetallePedido>> consultarDetallesPorPedido(@PathVariable Integer id) {
         return ResponseEntity.ok(pedidoService.consultarDetallesPorPedido(id));
     }
+
+    @DeleteMapping("/api/operador/pedidos/{id}")
+    public ResponseEntity<Void> eliminarPedido(@PathVariable Integer id) {
+        pedidoService.eliminarPedido(id);
+        return ResponseEntity.noContent().build();
+    }
 }
