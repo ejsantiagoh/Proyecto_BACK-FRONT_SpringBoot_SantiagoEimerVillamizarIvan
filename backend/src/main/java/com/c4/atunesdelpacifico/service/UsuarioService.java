@@ -23,6 +23,12 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     public Usuario registrarUsuario(Usuario usuario) {
+        if (usuario.getUsername() == null || usuario.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de usuario es obligatorio");
+        }
+        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("El nombre de usuario ya existe");
+        }
         if (usuario.getRol() == null || usuario.getRol().getId() == null) {
             throw new IllegalArgumentException("El rol es obligatorio");
         }

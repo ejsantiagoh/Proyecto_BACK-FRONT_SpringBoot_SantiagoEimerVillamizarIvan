@@ -30,6 +30,10 @@ public class Cliente {
     @Column(name = "estado", columnDefinition = "ENUM('Activo', 'Inactivo')", nullable = false)
     private EstadoCliente estado;
 
+    @OneToOne
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
+
     public enum EstadoCliente {
         Activo, Inactivo
     }

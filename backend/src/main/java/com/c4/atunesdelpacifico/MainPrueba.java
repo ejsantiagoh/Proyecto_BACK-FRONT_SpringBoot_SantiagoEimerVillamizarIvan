@@ -6,6 +6,7 @@ public class MainPrueba {
     public static void main(String[] args) {
     System.out.println(new BCryptPasswordEncoder().encode("admin123"));
     System.out.println(new BCryptPasswordEncoder().encode("op1234567"));
-    System.out.println(new BCryptPasswordEncoder().encode("cli1234567"));
+    System.out.println(new BCryptPasswordEncoder().encode("norte123"));
+    System.out.println(new BCryptPasswordEncoder().encode("sur123"));
 }
 }
