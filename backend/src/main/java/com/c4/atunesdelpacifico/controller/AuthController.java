@@ -11,13 +11,14 @@ import com.c4.atunesdelpacifico.repository.RolRepository;
 import com.c4.atunesdelpacifico.service.ClienteService;
 import com.c4.atunesdelpacifico.service.CustomUserDetailsService;
 import com.c4.atunesdelpacifico.service.UsuarioService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,16 +49,17 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
             );
         } catch (Exception e) {
+            System.out.println("Fallo en autenticación: " + e.getMessage());
             throw new Exception("Credenciales inválidas", e);
         }
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
-        final String token = jwtUtil.generateToken(userDetails);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
+        String token = jwtUtil.generateToken(userDetails);
+        System.out.println("Token generado para: " + authRequest.getUsername() + ", Rol: " + userDetails.getAuthorities());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerClient(@RequestBody UsuarioRequest usuarioRequest) {
-        // Validar campos obligatorios
         if (usuarioRequest.getIdentificacion() == null || usuarioRequest.getIdentificacion().isEmpty()) {
             return ResponseEntity.badRequest().body("La identificación es obligatoria");
         }
@@ -68,7 +70,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body("La dirección es obligatoria");
         }
 
-        // Validar que el rol sea Cliente (ID 3)
         if (usuarioRequest.getRolId() == null || !usuarioRequest.getRolId().equals(3)) {
             return ResponseEntity.badRequest().body("Solo se permite registrar usuarios con rol Cliente (ID 3)");
         }
@@ -78,7 +79,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("El usuario ya existe");
             }
         } catch (Exception e) {
-            // Ignorar si no encuentra el usuario, ya que es lo esperado
+            // Ignorar si no encuentra el usuario
         }
 
         Usuario usuario = new Usuario();
@@ -89,10 +90,8 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         usuario.setRol(rol);
 
-        // Registrar usuario
         usuario = usuarioService.registrarUsuario(usuario);
 
-        // Crear registro en la tabla clientes para rol Cliente
         if (rol.getId() == 3) {
             Cliente cliente = new Cliente();
             cliente.setNombre(usuarioRequest.getUsername());
@@ -118,10 +117,8 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         usuario.setRol(rol);
 
-        // Registrar usuario
         usuario = usuarioService.registrarUsuario(usuario);
 
-        // Si el rol es Cliente, crear un registro en la tabla clientes (opcional para admin)
         if (rol.getId() == 3 && usuarioRequest.getIdentificacion() != null) {
             Cliente cliente = new Cliente();
             cliente.setNombre(usuarioRequest.getUsername());
@@ -135,6 +132,11 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(usuario);
+    }
+
+    @GetMapping("/admin/usuarios")
+    public ResponseEntity<List<Usuario>> consultarUsuarios() {
+        return ResponseEntity.ok(usuarioService.consultarTodosLosUsuarios());
     }
 
     @DeleteMapping("/admin/usuarios/{id}")

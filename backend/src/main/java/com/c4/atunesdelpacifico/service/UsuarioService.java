@@ -1,5 +1,6 @@
 package com.c4.atunesdelpacifico.service;
 
+import com.c4.atunesdelpacifico.model.Cliente;
 import com.c4.atunesdelpacifico.model.Rol;
 import com.c4.atunesdelpacifico.model.Usuario;
 import com.c4.atunesdelpacifico.repository.RolRepository;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,6 +66,11 @@ public class UsuarioService {
         if (usuario.get().getRol().getId() == 1) { // rol_id=1 es Administrador
             throw new IllegalStateException("No se puede eliminar un usuario Administrador");
         }
+        // Verificar si hay Clientes asociados (debería manejarse en ClienteService)
         usuarioRepository.deleteById(id);
+    }
+
+    public List<Usuario> consultarTodosLosUsuarios() {
+        return usuarioRepository.findAll();
     }
 }

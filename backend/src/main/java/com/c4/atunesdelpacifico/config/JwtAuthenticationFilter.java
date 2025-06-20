@@ -26,8 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // Excluir las rutas de autenticación y registro
         String requestURI = request.getRequestURI();
+        System.out.println("Procesando solicitud: " + requestURI + " Método: " + request.getMethod());
+
         if (requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/register")) {
             chain.doFilter(request, response);
             return;
@@ -39,20 +40,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
+            try {
+                username = jwtUtil.extractUsername(token);
+                System.out.println("Token extraído, usuario: " + username);
+            } catch (Exception e) {
+                System.out.println("Error al extraer usuario del token: " + e.getMessage());
+            }
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
             if (jwtUtil.validateToken(token, userDetails)) {
+                System.out.println("Token válido, rol: " + userDetails.getAuthorities());
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Usuario autenticado: " + username + ", Rol: " + userDetails.getAuthorities().stream().findFirst().get());
+            } else {
+                System.out.println("Token inválido para usuario: " + username);
             }
+        } else {
+            System.out.println("Sin usuario o autenticación existente: " + username);
         }
 
         chain.doFilter(request, response);

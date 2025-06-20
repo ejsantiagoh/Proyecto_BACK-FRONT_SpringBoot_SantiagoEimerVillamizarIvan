@@ -7,6 +7,7 @@ import com.c4.atunesdelpacifico.model.Usuario;
 import com.c4.atunesdelpacifico.repository.ClienteRepository;
 import com.c4.atunesdelpacifico.repository.PedidoRepository;
 import com.c4.atunesdelpacifico.repository.RolRepository;
+import com.c4.atunesdelpacifico.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,9 @@ public class ClienteService {
 
     @Autowired
     private RolRepository rolRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -52,12 +56,11 @@ public class ClienteService {
             throw new IllegalArgumentException("El nombre de usuario y la contraseña son obligatorios");
         }
 
-        // Crear usuario con rol Cliente (si no existe ya)
         Usuario usuario = cliente.getUsuario();
         if (usuario == null) {
             usuario = new Usuario();
             usuario.setUsername(username);
-            usuario.setPassword(password); // La contraseña se cifrará en usuarioService
+            usuario.setPassword(password);
             usuario.setCorreo(cliente.getCorreo());
             Rol rolCliente = rolRepository.findById(3)
                     .orElseThrow(() -> new RuntimeException("Rol Cliente no encontrado"));
@@ -85,17 +88,24 @@ public class ClienteService {
     }
 
     public void eliminarCliente(Integer id) {
-        Optional<Cliente> cliente = clienteRepository.findById(id);
-        if (cliente.isEmpty()) {
+        System.out.println("Intentando eliminar cliente ID: " + id);
+        Optional<Cliente> clienteOpt = clienteRepository.findById(id);
+        if (clienteOpt.isEmpty()) {
+            System.out.println("Cliente ID: " + id + " no encontrado");
             throw new IllegalArgumentException("Cliente no encontrado");
         }
+        Cliente cliente = clienteOpt.get();
         List<Pedido> pedidosActivos = pedidoRepository.findByCliente_IdAndEstado(id, Pedido.EstadoPedido.Pendiente);
         pedidosActivos.addAll(pedidoRepository.findByCliente_IdAndEstado(id, Pedido.EstadoPedido.En_Proceso));
         if (!pedidosActivos.isEmpty()) {
+            System.out.println("Cliente ID: " + id + " tiene pedidos activos: " + pedidosActivos.size());
             throw new IllegalStateException("No se puede eliminar un cliente con pedidos activos");
         }
-        // Eliminar usuario asociado
-        usuarioService.eliminarUsuario(cliente.get().getUsuario().getId());
-        clienteRepository.deleteById(id);
+        Integer usuarioId = cliente.getUsuario().getId();
+        System.out.println("Eliminando cliente ID: " + id + " primero");
+        clienteRepository.delete(cliente); // Eliminar el Cliente primero
+        System.out.println("Eliminando usuario asociado ID: " + usuarioId);
+        usuarioService.eliminarUsuario(usuarioId); // Luego eliminar el Usuario
+        System.out.println("Cliente ID: " + id + " eliminado exitosamente");
     }
 }

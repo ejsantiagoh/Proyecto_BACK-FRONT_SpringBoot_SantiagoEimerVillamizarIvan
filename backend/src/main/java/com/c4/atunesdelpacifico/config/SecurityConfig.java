@@ -35,18 +35,17 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                .requestMatchers("/api/auth/admin/usuarios").hasRole("Administrador")
-                .requestMatchers("/api/admin/**").hasRole("Administrador")
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/auth/admin/usuarios","/api/admin/**").hasRole("Administrador")
                 .requestMatchers("/api/operador/**").hasAnyRole("Administrador", "Operador")
-                .requestMatchers("/api/cliente/**").hasRole("Cliente")
+                .requestMatchers("/api/cliente/**").hasAnyRole("Administrador", "Cliente")
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado");
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado: " + authException.getMessage());
                 }));
 
         return http.build();
@@ -55,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // Ajusta según la URL del front-end
+        configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

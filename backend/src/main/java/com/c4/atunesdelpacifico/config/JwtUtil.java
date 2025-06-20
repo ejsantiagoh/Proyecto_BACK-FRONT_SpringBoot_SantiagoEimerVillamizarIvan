@@ -14,7 +14,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET = "C4mpus.2025C4mpus.2025C4mpus.2025C4mpus.2025"; // Debe ser de al menos 256 bits (32 chars para HS256)
+    private static final String SECRET = "C4mpus.2025C4mpus.2025C4mpus.2025C4mpus.2025";
     private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 5; // 5 horas
 
@@ -23,7 +23,7 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class));
+        return extractClaim(token, claims -> claims.get("role", String.class)); // Sin añadir prefijo
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
@@ -52,7 +52,7 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
             .setSubject(userDetails.getUsername())
-            .claim("role", userDetails.getAuthorities().stream().findFirst().map(Object::toString).orElse("ROLE_USER").replace("ROLE_", ""))
+            .claim("role", userDetails.getAuthorities().stream().findFirst().map(Object::toString).orElse("USER"))
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)

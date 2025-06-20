@@ -6,6 +6,8 @@ import com.c4.atunesdelpacifico.model.Pedido;
 import com.c4.atunesdelpacifico.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +22,18 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<Cliente> registrarCliente(@RequestBody ClienteRequest clienteRequest) {
         Cliente cliente = new Cliente();
-        cliente.setNombre(clienteRequest.getNombre());
+        cliente.setNombre(clienteRequest.getUsername());
         cliente.setIdentificacion(clienteRequest.getIdentificacion());
         cliente.setCorreo(clienteRequest.getCorreo());
         cliente.setTelefono(clienteRequest.getTelefono());
         cliente.setDireccion(clienteRequest.getDireccion());
         cliente.setEstado(Cliente.EstadoCliente.Activo);
-        return ResponseEntity.ok(clienteService.registrarCliente(cliente, clienteRequest.getUsername(), clienteRequest.getPassword()));
+        try {
+            return ResponseEntity.ok(clienteService.registrarCliente(cliente, clienteRequest.getUsername(), clienteRequest.getPassword()));
+        } catch (Exception e) {
+            System.out.println("Error al registrar cliente: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @GetMapping
@@ -41,7 +48,20 @@ public class ClienteController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarCliente(@PathVariable Integer id) {
-        clienteService.eliminarCliente(id);
-        return ResponseEntity.noContent().build();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Intentando eliminar cliente ID: " + id + ", Usuario: " + (auth != null ? auth.getName() : "null") + ", Rol: " + (auth != null ? auth.getAuthorities() : "null"));
+        if (auth != null && auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ROLE_Administrador"))) {
+            try {
+                clienteService.eliminarCliente(id);
+                System.out.println("Cliente ID: " + id + " eliminado exitosamente");
+                return ResponseEntity.noContent().build();
+            } catch (Exception e) {
+                System.out.println("Error al eliminar cliente ID: " + id + ": " + e.getMessage());
+                return ResponseEntity.status(500).build(); // Error interno
+            }
+        } else {
+            System.out.println("Acceso denegado para eliminar cliente ID: " + id);
+            return ResponseEntity.status(403).build();
+        }
     }
 }
