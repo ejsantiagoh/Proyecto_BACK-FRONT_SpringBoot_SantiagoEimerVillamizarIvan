@@ -66,11 +66,19 @@ public class UsuarioService {
         if (usuario.get().getRol().getId() == 1) { // rol_id=1 es Administrador
             throw new IllegalStateException("No se puede eliminar un usuario Administrador");
         }
-        // Verificar si hay Clientes asociados (debería manejarse en ClienteService)
+        // Verificar si el usuario tiene un Cliente asociado
+        if (usuarioRepository.countClientesByUsuarioId(id) > 0) {
+            throw new IllegalStateException("No se puede eliminar el usuario porque está asociado a un cliente. Elimine el cliente asociado primero.");
+        }
         usuarioRepository.deleteById(id);
     }
 
     public List<Usuario> consultarTodosLosUsuarios() {
         return usuarioRepository.findAll();
+    }
+
+    public Usuario findByUsername(String username) {
+        return usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
     }
 }

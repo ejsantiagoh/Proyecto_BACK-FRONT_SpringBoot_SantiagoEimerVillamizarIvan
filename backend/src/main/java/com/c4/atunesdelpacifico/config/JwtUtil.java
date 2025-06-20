@@ -1,5 +1,6 @@
 package com.c4.atunesdelpacifico.config;
 
+import com.c4.atunesdelpacifico.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -23,7 +24,11 @@ public class JwtUtil {
     }
 
     public String extractRole(String token) {
-        return extractClaim(token, claims -> claims.get("role", String.class)); // Sin añadir prefijo
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    public Integer extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Integer.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
@@ -49,10 +54,11 @@ public class JwtUtil {
         return getClaims(token).getExpiration().before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Usuario usuario) {
         return Jwts.builder()
             .setSubject(userDetails.getUsername())
             .claim("role", userDetails.getAuthorities().stream().findFirst().map(Object::toString).orElse("USER"))
+            .claim("userId", usuario.getId()) // Añadir el ID del usuario
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)

@@ -53,8 +53,9 @@ public class AuthController {
             throw new Exception("Credenciales inválidas", e);
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
-        String token = jwtUtil.generateToken(userDetails);
-        System.out.println("Token generado para: " + authRequest.getUsername() + ", Rol: " + userDetails.getAuthorities());
+        Usuario usuario = usuarioService.findByUsername(authRequest.getUsername());
+        String token = jwtUtil.generateToken(userDetails, usuario);
+        System.out.println("Token generado para: " + authRequest.getUsername() + ", Rol: " + userDetails.getAuthorities() + ", UserId: " + usuario.getId());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
