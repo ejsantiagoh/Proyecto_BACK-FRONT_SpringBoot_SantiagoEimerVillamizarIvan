@@ -1,5 +1,7 @@
 package com.c4.atunesdelpacifico.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +15,7 @@ public class DetallePedido {
 
     @ManyToOne
     @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonBackReference
     private Pedido pedido;
 
     @ManyToOne

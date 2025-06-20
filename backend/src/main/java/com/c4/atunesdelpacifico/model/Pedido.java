@@ -8,6 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 @Entity
@@ -36,6 +37,7 @@ public class Pedido {
     private EstadoPedido estado;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<DetallePedido> detallePedidos;
 
     // public enum EstadoPedido {

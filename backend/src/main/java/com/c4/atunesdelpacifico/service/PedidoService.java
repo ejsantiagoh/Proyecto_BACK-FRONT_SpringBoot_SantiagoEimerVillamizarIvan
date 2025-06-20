@@ -40,7 +40,6 @@ public class PedidoService {
             pedido.setFechaPedido(new java.sql.Date(new Date().getTime()));
         }
         if (pedido.getFechaEntrega() == null) {
-            // Establecer fechaEntrega como 3 días después de fechaPedido (ajustable)
             java.util.Calendar cal = java.util.Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(java.util.Calendar.DAY_OF_MONTH, 3);
@@ -48,13 +47,20 @@ public class PedidoService {
         }
         Double total = 0.0;
         for (DetallePedido detalle : pedido.getDetallePedidos()) {
-            Optional<Lote> lote = loteRepository.findById(detalle.getLote().getId());
-            if (lote.isEmpty() || lote.get().getCantidad() < detalle.getCantidad()) {
+            Optional<Lote> loteOpt = loteRepository.findById(detalle.getLote().getId());
+            if (loteOpt.isEmpty()) {
+                throw new RuntimeException("Lote no encontrado");
+            }
+            Lote lote = loteOpt.get();
+            if (lote.getEstado() != Lote.EstadoLote.Disponible || lote.getCantidad() < detalle.getCantidad()) {
                 throw new RuntimeException("Lote no disponible o cantidad insuficiente");
             }
+            // Calcular subtotal basado en el precio del producto del lote
+            Double precioUnitario = lote.getProducto().getPrecio();
+            detalle.setSubtotal(precioUnitario * detalle.getCantidad());
             total += detalle.getSubtotal();
-            lote.get().setCantidad(lote.get().getCantidad() - detalle.getCantidad());
-            loteRepository.save(lote.get());
+            lote.setCantidad(lote.getCantidad() - detalle.getCantidad());
+            loteRepository.save(lote);
             detalle.setPedido(pedido); // Establecer la relación
         }
         pedido.setTotal(total); // Calcular total

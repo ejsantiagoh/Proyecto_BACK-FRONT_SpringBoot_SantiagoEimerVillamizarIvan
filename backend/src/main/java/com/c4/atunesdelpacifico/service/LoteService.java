@@ -1,7 +1,10 @@
 package com.c4.atunesdelpacifico.service;
 
+import com.c4.atunesdelpacifico.model.DetallePedido;
 import com.c4.atunesdelpacifico.model.Lote;
+import com.c4.atunesdelpacifico.model.Pedido;
 import com.c4.atunesdelpacifico.model.Producto;
+import com.c4.atunesdelpacifico.repository.DetallePedidoRepository;
 import com.c4.atunesdelpacifico.repository.LoteRepository;
 import com.c4.atunesdelpacifico.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,9 @@ public class LoteService {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired 
+    private DetallePedidoRepository detallePedidoRepository;
 
     public Lote registrarLote(Lote lote) {
         if (lote.getCantidad() <= 0) {
@@ -59,6 +65,14 @@ public class LoteService {
             Lote lote = loteOpt.get();
             if (lote.getEstado() == Lote.EstadoLote.Vendido) {
                 throw new IllegalStateException("No se puede marcar como defectuoso un lote ya vendido");
+            }
+            // Verificar si el lote está asociado a pedidos pendientes
+            List<DetallePedido> detallesPendientes = detallePedidoRepository.findByLote_Id(id)
+                    .stream()
+                    .filter(d -> d.getPedido().getEstado() != Pedido.EstadoPedido.Cancelado)
+                    .toList();
+            if (!detallesPendientes.isEmpty()) {
+                throw new IllegalStateException("No se puede marcar como defectuoso un lote asociado a pedidos pendientes");
             }
             lote.setEstado(Lote.EstadoLote.Defectuoso);
             return loteRepository.save(lote);

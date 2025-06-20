@@ -18,6 +18,9 @@ public class Producto {
     @Column(name = "descripcion")
     private String descripcion;
 
+    @Column(name = "precio", nullable = false)
+    private Double precio;
+
     public enum TipoProducto {
         Atun_en_aceite, Atun_en_agua, Atun_en_salsa
     }
