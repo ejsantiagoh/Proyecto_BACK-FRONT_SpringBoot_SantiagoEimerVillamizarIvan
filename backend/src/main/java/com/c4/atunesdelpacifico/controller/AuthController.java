@@ -64,8 +64,15 @@ public class AuthController {
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getUsername());
         Usuario usuario = usuarioService.findByUsername(authRequest.getUsername());
-        String token = jwtUtil.generateToken(userDetails, usuario);
-        System.out.println("Token generado para: " + authRequest.getUsername() + ", Rol: " + userDetails.getAuthorities() + ", UserId: " + usuario.getId());
+        Integer clientId = null;
+        if (usuario.getRol().getId() == 3) { // Solo para rol Cliente
+            Cliente cliente = clienteRepository.findByUsuario_Id(usuario.getId()).orElse(null);
+            if (cliente != null) {
+                clientId = cliente.getId();
+            }
+        }
+        String token = jwtUtil.generateToken(userDetails, usuario, clientId);
+        System.out.println("Token generado para: " + authRequest.getUsername() + ", Rol: " + userDetails.getAuthorities() + ", UserId: " + usuario.getId() + ", ClientId: " + clientId);
         return ResponseEntity.ok(new AuthResponse(token));
     }
 

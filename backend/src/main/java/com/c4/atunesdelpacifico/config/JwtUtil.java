@@ -31,6 +31,10 @@ public class JwtUtil {
         return extractClaim(token, claims -> claims.get("userId", Integer.class));
     }
 
+    public Integer extractClientId(String token) {
+        return extractClaim(token, claims -> claims.get("clientId", Integer.class));
+    }
+
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
         return resolver.apply(getClaims(token));
     }
@@ -54,11 +58,12 @@ public class JwtUtil {
         return getClaims(token).getExpiration().before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails, Usuario usuario) {
+    public String generateToken(UserDetails userDetails, Usuario usuario, Integer clientId) {
         return Jwts.builder()
             .setSubject(userDetails.getUsername())
             .claim("role", userDetails.getAuthorities().stream().findFirst().map(Object::toString).orElse("USER"))
             .claim("userId", usuario.getId()) // Añadir el ID del usuario
+            .claim("clientId", clientId != null ? clientId : null) // Añadir el ID del cliente (puede ser null)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
