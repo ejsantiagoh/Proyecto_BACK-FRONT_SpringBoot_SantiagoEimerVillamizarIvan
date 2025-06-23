@@ -22,6 +22,10 @@ public class DetallePedido {
     @JoinColumn(name = "lote_id", nullable = false)
     private Lote lote;
 
+    @ManyToOne
+    @JoinColumn(name = "producto_id")
+    private Producto producto;
+
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 

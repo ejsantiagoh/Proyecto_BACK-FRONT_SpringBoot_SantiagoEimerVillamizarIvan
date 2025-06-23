@@ -2,12 +2,15 @@ package com.c4.atunesdelpacifico.service;
 
 import com.c4.atunesdelpacifico.model.Lote;
 import com.c4.atunesdelpacifico.model.Pedido;
+import com.c4.atunesdelpacifico.model.Producto;
 import com.c4.atunesdelpacifico.model.DetallePedido;
 import com.c4.atunesdelpacifico.repository.PedidoRepository;
 import com.c4.atunesdelpacifico.repository.LoteRepository;
 import com.c4.atunesdelpacifico.repository.DetallePedidoRepository;
+import com.c4.atunesdelpacifico.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +28,10 @@ public class PedidoService {
     @Autowired
     private DetallePedidoRepository detallePedidoRepository;
 
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    @Transactional
     public Pedido crearPedido(Pedido pedido) {
         if (pedido.getCliente() == null || pedido.getCliente().getId() == null) {
             throw new IllegalArgumentException("El cliente es obligatorio");
@@ -47,18 +54,48 @@ public class PedidoService {
         }
         Double total = 0.0;
         for (DetallePedido detalle : pedido.getDetallePedidos()) {
-            Optional<Lote> loteOpt = loteRepository.findById(detalle.getLote().getId());
-            if (loteOpt.isEmpty()) {
-                throw new RuntimeException("Lote no encontrado");
+            if (detalle.getProducto() == null || detalle.getProducto().getNombre() == null) {
+                throw new IllegalArgumentException("El producto es obligatorio en el detalle del pedido");
             }
-            Lote lote = loteOpt.get();
-            if (lote.getEstado() != Lote.EstadoLote.Disponible || lote.getCantidad() < detalle.getCantidad()) {
-                throw new RuntimeException("Lote no disponible o cantidad insuficiente");
+            // Buscar el producto persistente por nombre
+            Producto productoPersistente = productoRepository.findByNombre(detalle.getProducto().getNombre());
+            if (productoPersistente == null) {
+                throw new RuntimeException("Producto no encontrado con nombre: " + detalle.getProducto().getNombre());
             }
+            detalle.setProducto(productoPersistente);
+            if (detalle.getLote() == null || detalle.getLote().getId() == null) {
+                // Buscar un lote disponible para el producto
+                Optional<Lote> loteOpt = loteRepository.findFirstByProducto_NombreAndEstadoAndQuantityGreaterThan(
+                    detalle.getProducto().getNombre(), Lote.EstadoLote.Disponible, detalle.getCantidad() - 1
+                );
+                if (loteOpt.isEmpty()) {
+                    throw new RuntimeException("No hay lotes disponibles para el producto: " + detalle.getProducto().getNombre());
+                }
+                Lote lote = loteOpt.get();
+                if (lote.getCantidad() < detalle.getCantidad()) {
+                    throw new RuntimeException("Cantidad insuficiente en lotes disponibles para: " + detalle.getProducto().getNombre());
+                }
+                detalle.setLote(lote); // Asignar el lote encontrado
+            } else {
+                // Validar lote preasignado
+                Optional<Lote> loteOpt = loteRepository.findById(detalle.getLote().getId());
+                if (loteOpt.isEmpty()) {
+                    throw new RuntimeException("Lote no encontrado");
+                }
+                Lote lote = loteOpt.get();
+                if (lote.getEstado() != Lote.EstadoLote.Disponible || lote.getCantidad() < detalle.getCantidad()) {
+                    throw new RuntimeException("Lote no disponible o cantidad insuficiente");
+                }
+                // Verificar que el lote corresponda al producto
+                if (!lote.getProducto().getNombre().equals(detalle.getProducto().getNombre())) {
+                    throw new RuntimeException("El lote no corresponde al producto seleccionado");
+                }
+            }
+            Lote lote = detalle.getLote();
             // Calcular subtotal basado en el precio del producto del lote
             Double precioUnitario = lote.getProducto().getPrecio();
             detalle.setSubtotal(precioUnitario * detalle.getCantidad());
-            total += detalle.getSubtotal();
+            total += precioUnitario * detalle.getCantidad(); // Corrección del cálculo de total
             lote.setCantidad(lote.getCantidad() - detalle.getCantidad());
             loteRepository.save(lote);
             detalle.setPedido(pedido); // Establecer la relación
