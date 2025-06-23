@@ -7,6 +7,7 @@ import com.c4.atunesdelpacifico.dto.UsuarioRequest;
 import com.c4.atunesdelpacifico.model.Cliente;
 import com.c4.atunesdelpacifico.model.Rol;
 import com.c4.atunesdelpacifico.model.Usuario;
+import com.c4.atunesdelpacifico.repository.ClienteRepository;
 import com.c4.atunesdelpacifico.repository.RolRepository;
 import com.c4.atunesdelpacifico.repository.UsuarioRepository;
 import com.c4.atunesdelpacifico.service.ClienteService;
@@ -47,6 +48,9 @@ public class AuthController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authRequest) throws Exception {
@@ -162,7 +166,9 @@ public class AuthController {
             usuarioExistente.setUsername(usuarioRequest.getUsername());
         }
         if (usuarioRequest.getCorreo() != null) usuarioExistente.setCorreo(usuarioRequest.getCorreo());
-        if (usuarioRequest.getPassword() != null) usuarioExistente.setPassword(usuarioRequest.getPassword());
+        if (usuarioRequest.getPassword() != null && !usuarioRequest.getPassword().isEmpty()) {
+            usuarioExistente.setPassword(usuarioRequest.getPassword()); // Solo asignar si se proporciona
+        }
         if (usuarioRequest.getRolId() != null) {
             Rol rol = rolRepository.findById(usuarioRequest.getRolId())
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
@@ -173,6 +179,19 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(null); // No cambiar rol si hay cliente asociado
             }
             usuarioExistente.setRol(rol);
+        }
+
+        // Actualizar el Cliente asociado si el rol es Cliente (ID 3)
+        if (usuarioExistente.getRol().getId() == 3) {
+            Cliente cliente = clienteRepository.findByUsuario_Id(id)
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado para el usuario"));
+            if (usuarioRequest.getUsername() != null) cliente.setNombre(usuarioRequest.getUsername());
+            if (usuarioRequest.getCorreo() != null) cliente.setCorreo(usuarioRequest.getCorreo());
+            try {
+                clienteRepository.save(cliente);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(null); // Manejar errores de actualización del cliente
+            }
         }
 
         try {

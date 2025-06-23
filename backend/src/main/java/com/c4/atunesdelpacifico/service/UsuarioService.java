@@ -28,7 +28,7 @@ public class UsuarioService {
         if (usuario.getUsername() == null || usuario.getUsername().isEmpty()) {
             throw new IllegalArgumentException("El nombre de usuario es obligatorio");
         }
-        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
+        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent() && usuario.getId() == null) {
             throw new IllegalArgumentException("El nombre de usuario ya existe");
         }
         if (usuario.getRol() == null || usuario.getRol().getId() == null) {
@@ -39,7 +39,10 @@ public class UsuarioService {
             throw new RuntimeException("Rol no encontrado");
         }
         usuario.setRol(rol.get());
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        // Encriptar la contraseña solo si se proporciona un nuevo valor
+        if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
         return usuarioRepository.save(usuario);
     }
 
