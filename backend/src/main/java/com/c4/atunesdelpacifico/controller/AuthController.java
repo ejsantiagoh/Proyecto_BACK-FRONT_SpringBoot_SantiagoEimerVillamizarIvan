@@ -159,15 +159,15 @@ public class AuthController {
     @PatchMapping("/admin/usuarios/{id}")
     public ResponseEntity<Usuario> actualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioRequest usuarioRequest) {
         Usuario usuarioExistente = usuarioService.findById(id); // Buscar usuario por ID
-        if (usuarioRequest.getUsername() != null && !usuarioRequest.getUsername().equals(usuarioExistente.getUsername())) {
-            if (usuarioRepository.findByUsername(usuarioRequest.getUsername()).isPresent()) {
+        if (usuarioRequest.getUsername() != null) {
+            if (!usuarioRequest.getUsername().equals(usuarioExistente.getUsername()) && usuarioRepository.findByUsername(usuarioRequest.getUsername()).isPresent()) {
                 return ResponseEntity.badRequest().body(null); // Username ya existe
             }
             usuarioExistente.setUsername(usuarioRequest.getUsername());
         }
         if (usuarioRequest.getCorreo() != null) usuarioExistente.setCorreo(usuarioRequest.getCorreo());
         if (usuarioRequest.getPassword() != null && !usuarioRequest.getPassword().isEmpty()) {
-            usuarioExistente.setPassword(usuarioRequest.getPassword()); // Solo asignar si se proporciona
+            usuarioExistente.setPassword(usuarioRequest.getPassword());
         }
         if (usuarioRequest.getRolId() != null) {
             Rol rol = rolRepository.findById(usuarioRequest.getRolId())
@@ -187,6 +187,16 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado para el usuario"));
             if (usuarioRequest.getUsername() != null) cliente.setNombre(usuarioRequest.getUsername());
             if (usuarioRequest.getCorreo() != null) cliente.setCorreo(usuarioRequest.getCorreo());
+            if (usuarioRequest.getIdentificacion() != null) cliente.setIdentificacion(usuarioRequest.getIdentificacion());
+            if (usuarioRequest.getTelefono() != null) cliente.setTelefono(usuarioRequest.getTelefono());
+            if (usuarioRequest.getDireccion() != null) cliente.setDireccion(usuarioRequest.getDireccion());
+            if (usuarioRequest.getEstado() != null) {
+                try {
+                    cliente.setEstado(Cliente.EstadoCliente.valueOf(usuarioRequest.getEstado()));
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body(null); // Estado inválido
+                }
+            }
             try {
                 clienteRepository.save(cliente);
             } catch (Exception e) {

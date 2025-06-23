@@ -11,4 +11,5 @@ public class UsuarioRequest {
     private String identificacion;
     private String telefono;
     private String direccion;
+    private String estado;
 }
