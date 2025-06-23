@@ -29,7 +29,7 @@ public class PedidoController {
         }
     }
 
-    @GetMapping("/api/operador/cliente/pedidos")
+    @GetMapping("/api/cliente/pedidos")
     public ResponseEntity<List<Pedido>> consultarPedidos(@RequestParam(required = false) Integer clienteId,
                                                         @RequestParam(required = false) String estado) {
         return ResponseEntity.ok(pedidoService.consultarPedidos(clienteId, estado));
