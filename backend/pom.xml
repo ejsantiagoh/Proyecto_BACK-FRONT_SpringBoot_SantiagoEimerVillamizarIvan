@@ -70,11 +70,11 @@
 			<optional>true</optional>
 		</dependency>
 		<!-- Para cargar las variables de entorno -->
-		<dependency>
+		<!-- <dependency>
     		<groupId>io.github.cdimascio</groupId>
     		<artifactId>dotenv-java</artifactId>
     		<version>3.0.0</version>
-		</dependency>
+		</dependency> -->
 		<!-- Documentación Swagger -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -103,6 +103,11 @@
     		<groupId>jakarta.annotation</groupId>
     		<artifactId>jakarta.annotation-api</artifactId>
     		<version>2.1.1</version>
+		</dependency>
+		<!-- Spring actuator -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 	</dependencies>
 

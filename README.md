@@ -17,49 +17,34 @@ El sistema busca centralizar la información y automatizar procesos claves como:
 ## 📁 Estructura del Proyecto
 
 ```
-backend/
-├── .mvn/
-├── src/
-│   └── main/
-│       ├── java/com/c4/atunesdelpacifico/
-│       │   ├── config/                  # Configuración general y de seguridad (JWT, CORS, filtros)
-│       │   │   ├── GlobalExceptionHandler.java
-│       │   │   ├── JwtAuthenticationFilter.java
-│       │   │   ├── JwtUtil.java
-│       │   │   └── SecurityConfig.java
-│       │   ├── controller/             # Controladores REST
-│       │   ├── dto/                    # Clases DTO para transferencias de datos
-│       │   ├── model/                  # Entidades JPA
-│       │   ├── repository/             # Repositorios JPA (interfaces)
-│       │   ├── service/                # Lógica de negocio
-│       │   └── AtunesdelpacificoApplication.java
-│       └── resources/
-│           ├── application.properties  # Configuración de la aplicación (DB, JWT, etc.)
-│           └── data.sql                # Script inicial para carga de datos
-├── test/                               # Tests de unidad y de integración
-├── mvnw, mvnw.cmd                      # Wrappers de Maven
-└── pom.xml                             # Archivo de configuración del proyecto Maven
+proyecto/
+  backend/              # Código de Spring Boot
+    src/
+    pom.xml
+    Dockerfile
+  frontend/             # Código de React
+    src/
+    package.json
+    Dockerfile
+  docker-compose.yml
+  .env
 ```
 
 ---
 
 ## ⚙️ Configuración del Entorno
 
-Crea un archivo `.env` con las siguientes variables de entorno (para configuración con Spring Boot si se usa alguna integración externa como dotenv o contenedores):
+Crea un archivo `.env` con las siguientes variables de entorno (para configuración con Spring Boot o contenedores) en la raiz del proyecto:
 
 ```
-DB_URL=jdbc:mysql://localhost:3306/atunesdelpacifico
-DB_USERNAME=root
-DB_PASSWORD=ivan1703
-```
-
-O configura directamente en `application.properties`:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/atunesdelpacifico
-spring.datasource.username=root
-spring.datasource.password=ivan1703
-spring.jpa.hibernate.ddl-auto=update
+MYSQL_ROOT_PASSWORD=R00tP@ssw0rd2025
+MYSQL_DATABASE=escribe su bd
+MYSQL_USER=app_user
+MYSQL_PASSWORD=escribe su passwprd
+SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false
+SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+SPRING_PROFILES_ACTIVE=prod
 ```
 
 ## 🔐 Seguridad
@@ -69,7 +54,7 @@ spring.jpa.hibernate.ddl-auto=update
 - Configuración de CORS incluida en `SecurityConfig.java`:
 
 ```java
-configuration.addAllowedOrigin("http://localhost:5173"); // Cambia al puerto de tu frontend
+configuration.addAllowedOrigin("http://localhost:3000"); // Cambia al puerto de tu frontend
 ```
 
 ## 🚀 Endpoints
@@ -86,13 +71,14 @@ Accede a la documentación interactiva en: `http://localhost:8081/swagger-ui.htm
 - **JPA / Hibernate**
 - **MySQL**
 - **Swagger**
+- **Docker**
 
 ---
 
 ## 📝 Repositorio
 
 Repositorio oficial:  
-👉 https://github.com/ejsantiagoh/Proyecto_BACK-FRONT_SpringBoot_SantiagoEimerVillamizarIvan/tree/dario
+👉 https://github.com/ejsantiagoh/Proyecto_BACK-FRONT_SpringBoot_SantiagoEimerVillamizarIvan.git
 
 Si no funciona correctamente, puedes clonar la versión de solo frontend desde:  
 👉 https://github.com/ivillamizar5/frontedAtunDelPacifico
@@ -108,5 +94,5 @@ Si no funciona correctamente, puedes clonar la versión de solo frontend desde:
 
 ## 📌 Notas Adicionales
 
-- Se recomienda usar Apache Tomcat como servidor para el backend.
-- El frontend puede ser servido desde Apache Web Server o desde un servidor React local.
+- Se recomienda usar docker como servidor para el backend. http://localhost:8081/api/auth/login
+- El frontend puede ser servido desde [docker](http://localhost:3000/) o desde un servidor React local.

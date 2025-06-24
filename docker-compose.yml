@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   mysql:
-    image: mysql:8
-    container_name: mysql-db
+    image: mysql:8.0.35
+    container_name: mysql_db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -12,31 +12,52 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
-    container_name: spring-backend
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spring_backend
     environment:
-      - DB_URL=jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
-      - DB_USERNAME=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - JAVA_OPTS=-Xmx512m -Xms256m
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     ports:
-      - "8080:8081"
+      - "8081:8081"  # Mapea 8081 del host al 8081 del contenedor
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    container_name: react-frontend
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_frontend
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   mysql_data:
