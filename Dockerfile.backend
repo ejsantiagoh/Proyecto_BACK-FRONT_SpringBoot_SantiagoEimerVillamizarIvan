@@ -1,0 +1,15 @@
+# Etapa 1: Build con Maven
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
+WORKDIR /app
+COPY backend/pom.xml backend/
+COPY backend/src backend/src
+RUN mvn -f backend/pom.xml clean package -DskipTests
+
+# Etapa 2: Imagen ligera de ejecución
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=builder /app/backend/target/atunesdelpacifico-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8081
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
